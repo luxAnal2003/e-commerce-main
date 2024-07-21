@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Validación básica
     if (empty($nombre) || empty($apellido) || empty($documento_identidad) || empty($contrasena) || empty($correo_electronico) || empty($ubicacion)) {
         $error = "Todos los campos son obligatorios.";
-        echo $error;
+        echo "<script>alert('$error'); window.history.back();</script>";;
     } else {
         // Verificar si el correo electrónico ya existe
         $sql = "SELECT id FROM ClienteRegistrado WHERE correo_electronico = ?";
@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($stmt->num_rows > 0) {
             $error = "El correo electrónico ya está en uso.";
-            echo $error;
+            echo "<script>alert('$error'); window.history.back();</script>";
         } else {
             // Verificar si el documento de identidad ya existe
             $sql = "SELECT id FROM ClienteRegistrado WHERE documento_identidad = ?";
@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($stmt->num_rows > 0) {
                 $error = "El documento de identidad ya está en uso.";
-                echo $error;
+                echo "<script>alert('$error'); window.history.back();</script>";
             } else {
                 //insertar el nuevo usuario en la base de datos
                 $sql = "INSERT INTO ClienteRegistrado (nombre, apellido, edad, sexo, fecha_nacimiento, documento_identidad, contrasena, correo_electronico, ubicacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -53,11 +53,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt->execute();
                     $_SESSION['id'] = $stmt->insert_id;
                     $_SESSION['correo_electronico'] = $correo_electronico;
-                    header("Location: ../index.php");
-                    exit();
+                    echo "<script>alert('Registro exitoso'); window.location.href = '../index.php';</script>";
                 } catch (mysqli_sql_exception $e) {
                     $error = "Ocurrió un error al registrar el usuario. Por favor, intenta nuevamente.";
-                    echo $error;
+                    echo "<script>alert('$error'); window.history.back();</script>";
                 }
             }
             $stmt->close();
