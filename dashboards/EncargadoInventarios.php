@@ -1,131 +1,143 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendedor</title>
-    <link rel="stylesheet" href="../css/navbar y footer.css">
-    <style>
-        .contenedor{
-            padding: 20px;
-            text-align: left;  
-        }
-        .contenido {
-            display: none;
-        }
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard Encargado de Inventarios</title>
+        <link rel="stylesheet" href="../css/navbar-footer.css">
+        <link rel="stylesheet" href="../css/style.css">
+        <style>
+            .contenedor{
+                padding: 20px;
+                text-align: left;
+            }
+            .contenido {
+                display: none;
+            }
 
-        .activo {
-            display: block;
-        }
+            .activo {
+                display: block;
+            }
 
-        #titulos {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px; 
-        }
+            #titulos {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
 
-        .titulo {
-            margin-right: 10px;
-            cursor: pointer;
-        }
+            .titulo {
+                margin-right: 10px;
+                cursor: pointer;
+            }
 
-        .titulo.activo {
-            font-weight: bold;
-            color: green;
-        }
+            .titulo.activo {
+                font-weight: bold;
+                color: green;
+            }
 
-        .nuevoProd{
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .nuevoProd h2{
-            flex:1;
-            text-align: center;
-        }
-        
-        .listaProductos{
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+            .nuevoProd{
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
 
-        .itemProducto {
-            border: 1px solid #ccc;
-            padding: 20px;
-            margin: 5px;
-            width: 150px;
-            text-align: center;
-            border-radius: 10px;
-        }
+            .nuevoProd h2{
+                flex:1;
+                text-align: center;
+            }
 
-        .itemProducto img{
-            width: 150px;
-            height: auto;
-        }
-        
-        .resena a{
-            text-decoration: none;
-            color: #ee6c4d;
-        }
+            .listaProductos{
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
 
-        .resena, .replica {
-            margin: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f8f8f8;
-        }
+            .itemProducto {
+                border: 1px solid #ccc;
+                padding: 20px;
+                margin: 5px;
+                width: 150px;
+                text-align: center;
+                border-radius: 10px;
+            }
 
-        .resena p, .replica p {
-            margin: 5px 0;
-        }
+            .itemProducto img{
+                width: 150px;
+                height: auto;
+            }
 
-        hr {
-            border: 0;
-            height: 1px;
-            background: #ddd;
-        }
-        .verProducto {
-            cursor: pointer;
-        }
+            .resena a{
+                text-decoration: none;
+                color: #ee6c4d;
+            }
 
-        button {
-            background-color: #3d5a80;
-            color: #ffffff;
-            font-family: 'Lato', sans-serif;
-            font-size: 14px;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            border-radius: 20px;
-        }
+            .resena, .replica {
+                margin: 20px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background-color: #f8f8f8;
+            }
 
-        button:hover {
-            background-color: #98c1d9;
-        }
-    </style>
-</head>
-<body>
-    <main>
-        <div class="contenedor">
-            <div id="titulos">
-                <a class="titulo activo" id="uno" onclick="cambiarPestania('productos')">Productos</a>
-                <a class="titulo" id="dos" onclick="cambiarPestania('clientesPorResponder')">Clientes por responder</a>
-                <a class="titulo" id="tres" onclick="cambiarPestania('clientesRespondidos')">Clientes respondidos</a>
-            </div>
+            .resena p, .replica p {
+                margin: 5px 0;
+            }
 
-            <div id="productos" class="contenido activo">
-                <div class="nuevoProd">
-                    <h2>Todos los productos ordenados por orden alfabetico</h2>
-                    <button>Agregar producto</button>
-                </div>
-                <div class="listaProductos">
-                    <?php include '../components/itemProducto.php';?>
-                </div>
-            </div>
-            <div id="clientesPorResponder" class="contenido">
+            hr {
+                border: 0;
+                height: 1px;
+                background: #ddd;
+            }
+            .verProducto {
+                cursor: pointer;
+            }
+
+            button {
+                background-color: #3d5a80;
+                color: #ffffff;
+                font-family: 'Lato', sans-serif;
+                font-size: 14px;
+                border: none;
+                padding: 10px;
+                cursor: pointer;
+                border-radius: 50px;
+            }
+
+            button:hover {
+                background-color: #98c1d9;
+            }
+
+        </style>
+    </head>
+    <body>
+        <?php include '../navbars/EncargadoInventarios.html'; ?>
+        <main style="margin-top: 110px;">
+            <div class="contenedor">
+               
+                <section class="productos">
+                    <h2>Todos los productos</h2>
+                    <div class="listaProductos">
+                        <?php
+                        require '../database/connection.php';
+                        $query = "SELECT * FROM Productos ORDER BY nombre ASC";
+                        $result = $conn->query($query);
+
+                        while ($row = $result->fetch_assoc()) {
+                            echo '<div class="itemProducto">';
+                            echo '<div class="verProducto" onclick="redirigir(\'producto.php?id=' . $row['id'] . '\')">';
+                            echo '<img src="../assets/uploads/' . $row['imagen_url'] . '" alt="' . $row['nombre'] . '">';
+                            echo '<p>' . $row['nombre'] . '</p>';
+                            echo '<p>$' . $row['precio'] . '</p>';
+                            echo '</div>';
+                            echo '<button style="border-radius: 50px; margin-right: 4px;" onclick="editarProducto(' . $row['id'] . ')">Editar</button>';
+                            echo '<button style="border-radius: 50px" onclick="eliminarProducto(' . $row['id'] . ')">Eliminar</button>';
+                            echo '</div>';
+                        }
+                        ?>
+                    </div>
+                </section>
+                
+                <div id="clientesPorResponder" class="contenido">
             <section class="resena">
                     <div class="resena">
                         <p>Usuario: Juan Pérez</p>
@@ -194,31 +206,27 @@
             </div>
 
         </div>
-        
-    </main>
-    <script>
-        function cambiarPestania(id) {
-            // Ocultar todos los contenidos
-            var contenidos = document.getElementsByClassName('contenido');
-            for (var i = 0; i < contenidos.length; i++) {
-                contenidos[i].classList.remove('activo');
+
+            </div>
+        </main>
+        <?php include '../templates/footer.html'; ?>
+        <script>
+            function redirigir(url) {
+                window.location.href = url;
             }
 
-            // Mostrar el contenido seleccionado
-            var contenidoSeleccionado = document.getElementById(id);
-            contenidoSeleccionado.classList.add('activo');
-
-            // Cambiar estilo de los títulos
-            var titulos = document.getElementsByClassName('titulo');
-            for (var j = 0; j < titulos.length; j++) {
-                titulos[j].classList.remove('activo');
+            function editarProducto(id) {
+                // Lógica para editar producto
+                redirigir('editar_producto.php?id=' + id);
             }
-            document.getElementById(event.target.id).classList.add('activo'); 
-        }
 
-        function redirigir(url){
-            window.location.href = url; 
-        }
-    </script>
-</body>
+            function eliminarProducto(id) {
+                if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+                    // Lógica para eliminar producto
+                    redirigir('eliminar_producto.php?id=' + id);
+                }
+            }
+                   
+        </script>
+    </body>
 </html>

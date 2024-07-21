@@ -1,7 +1,6 @@
 -- Eliminar triggers
 DROP TRIGGER IF EXISTS before_insert_CarritoCompra;
 DROP TRIGGER IF EXISTS before_update_CarritoCompra;
-DROP TRIGGER IF EXISTS tr_realizar_compra;
 DROP TRIGGER IF EXISTS before_insert_MensajesForo;
 
 -- Eliminar procedimientos almacenados

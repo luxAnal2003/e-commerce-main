@@ -105,8 +105,8 @@
     ?>
     <main>
         <?php
-            if (!empty($_POST['id'])) {
-                $id = htmlentities($_POST['id']);
+            if (!empty($_POST['verProducto'])) {
+                $id = htmlentities($_POST['verProducto']);
                 $sql = "select * from productos where id = $id";
                 $resultado = mysqli_query($conn, $sql);
             
