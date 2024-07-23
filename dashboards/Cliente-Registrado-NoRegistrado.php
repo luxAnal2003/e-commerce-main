@@ -274,8 +274,11 @@ $productos_vendidos = obtenerProductosPorCategoria(17, $conn);
         <div class="bannerPublicitario">
             <img src="assets/img/promocionMueble.png" alt="Nuevo Producto">
             <div>
-                <h2>Obten un descuento en tu primera orden de $20</h2>
-                <button onclick="redirigir('productosCategoria.php')">Comprar por categoría</button>
+                <form method="POST" action="index.php" class="productoCatgForm">
+                    <input type="hidden" name="verProductoCatg" value="<?= $producto['id'] ?>">
+                    <h2>Obten un descuento en tu primera orden de $20</h2>
+                    <button onclick="redirigirProductoCateg(event)">Comprar por categoría</button>
+                <form>
             </div>
         </div>
 
@@ -283,6 +286,12 @@ $productos_vendidos = obtenerProductosPorCategoria(17, $conn);
             function redirigirProducto(event) {
                 if (!event.target.closest('button')) {
                     event.currentTarget.querySelector('.productoForm').submit();
+                }
+            }
+
+            function redirigirProductoCateg(event) {
+                if (event.target.closest('button')) {
+                    event.currentTarget.querySelector('.productoCatgForm').submit();
                 }
             }
 
