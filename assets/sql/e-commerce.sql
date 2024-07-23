@@ -164,7 +164,6 @@ CREATE TABLE IF NOT EXISTS MensajesForo (
     id_usuario INT DEFAULT NULL,
     id_encargado INT DEFAULT NULL,
     id_respuesta_a INT DEFAULT NULL,
-    nombre_usuario VARCHAR(100) NOT NULL,
     mensaje TEXT NOT NULL,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     estado BOOLEAN DEFAULT FALSE,
@@ -177,7 +176,6 @@ CREATE TABLE IF NOT EXISTS MensajesForo (
     INDEX idx_mensajesforo_id_encargado (id_encargado),
     INDEX idx_mensajesforo_id_respuesta_a (id_respuesta_a)
 );
-
 -- Procedimiento almacenado para calcular la fecha de entrega
 DELIMITER //
 CREATE PROCEDURE IF NOT EXISTS calcularFechaEntrega(IN new_id_compra INT)
@@ -302,8 +300,8 @@ DELIMITER ;
 -- Insertar datos de ClienteRegistrado
 INSERT INTO ClienteRegistrado (nombre, apellido, edad, sexo, fecha_nacimiento, documento_identidad, contrasena, correo_electronico, ubicacion)
 VALUES
-('Juan', 'Perez', 30, 'M', '1993-01-15', '1234567890', 'password1', 'juan.perez@example.com', 'Guayaquil'),
-('Maria', 'Gomez', 25, 'F', '1998-04-22', '0987654321', 'password2', 'maria.gomez@example.com', 'Quito'),
+('Juan', 'Perez',30, 'M', '1993-01-15', '1234567890', 'password1', 'juan.perez@example.com', 'Guayaquil'),
+('Maria', 'Gomez',25, 'F', '1998-04-22', '0987654321', 'password2', 'maria.gomez@example.com', 'Quito'),
 ('Luis', 'Martinez', 40, 'M', '1983-08-12', '1029384756', 'password3', 'luis.martinez@example.com', 'Cuenca'),
 ('Ana', 'Lopez', 28, 'F', '1995-02-18', '5647382910', 'password4', 'ana.lopez@example.com', 'Manta');
 
@@ -555,6 +553,11 @@ VALUES
 (6, 16), (7, 16), (8, 16), (9, 16), (10, 16),
 -- Lo más vendido
 (11, 17), (12, 17), (13, 17), (14, 17), (15, 17);
+
+-- Insertar datos en mensajes de foro
+INSERT INTO MensajesForo (id_producto, id_usuario, id_encargado,  id_respuesta_a, mensaje, fecha, estado) 
+VALUES
+('3', '4', '2', NULL, 'Compre estos auriculares la semana pasada y la calidad del sonido es increible. La cancelacion de ruido es excelente y el micrófono funciona a la perfeccion.', current_timestamp(), '0');
 
 -- Ver contenido de la tabla Rol
 SELECT * FROM Rol;
