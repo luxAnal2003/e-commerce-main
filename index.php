@@ -27,7 +27,9 @@ session_start();
             include 'redirects/sign-in-up.html';
         } elseif (isset($_POST['carrito'])) {
             include 'views/carrito.php';
-        } elseif (isset($_POST['verProducto'])) {
+        } elseif (isset($_POST['verProducto']) || isset($_GET['verProducto'])) {
+            $id_producto = isset($_POST['verProducto']) ? $_POST['verProducto'] : $_GET['verProducto'];
+            $_POST['verProducto'] = $id_producto; 
             include 'views/producto.php';
         } else {
             include 'dashboards/Cliente-Registrado-NoRegistrado.php';
