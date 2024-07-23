@@ -31,6 +31,8 @@ session_start();
             $id_producto = isset($_POST['verProducto']) ? $_POST['verProducto'] : $_GET['verProducto'];
             $_POST['verProducto'] = $id_producto; 
             include 'views/producto.php';
+        } elseif (isset($_POST['verProductoCatg'])) {
+            include 'views/productosCategoria.php';
         } else {
             include 'dashboards/Cliente-Registrado-NoRegistrado.php';
         }
