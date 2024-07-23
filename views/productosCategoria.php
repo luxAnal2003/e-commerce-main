@@ -101,7 +101,7 @@
         <main>
         <section class="productos">
             <?php
-            require '../database/connection.php';
+            require 'database/connection.php';
 
             $sql_categorias = "SELECT * FROM Categorias";
             $resultado = $conn->query($sql_categorias);
@@ -153,7 +153,7 @@
                                 <form method="POST" action="../index.php" class="productoForm">
                                     <input type="hidden" name="verProducto" value="<?= $producto['id'] ?>">
                                     <div class="verProducto">
-                                        <img src="../assets/uploads/<?= $producto['imagen_url'] ?>" alt="<?= $producto['nombre'] ?>">
+                                        <img src="assets/uploads/<?= $producto['imagen_url'] ?>" alt="<?= $producto['nombre'] ?>">
                                         <div class="contenedorNombreProducto">
                                             <p><?=$nombreCorto?></p>
                                         </div>
