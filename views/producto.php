@@ -203,9 +203,9 @@
                             while ($row = mysqli_fetch_assoc($resultForo)) {
                                 ?>
                                 <div class="replica" style="margin-left: <?= $nivel * 20 ?>px;">
-                                    <?php if (!is_null($row['nombre_replicado'])): ?>
+                                    <?php if (!is_null($row['nombre_replicado'])){ ?>
                                         <p><b>Re: <?= htmlspecialchars($row['nombre_replicado']) ?></b></p>
-                                    <?php endif; ?>
+                                    <?php } ?>
                                     <p>Por: <?= htmlspecialchars($row['nombre']); ?> el <?= htmlspecialchars($row['fecha']); ?></p>
                                     <hr>
                                     <p>Mensaje: <?= htmlspecialchars($row['mensaje']) ?></p>
