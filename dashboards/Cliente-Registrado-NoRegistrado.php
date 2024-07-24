@@ -92,7 +92,7 @@ $productos_vendidos = obtenerProductosPorCategoria(17, $conn);
 
             .bannerPublicitario {
                 align-items: center;
-                background-color: #ccc;
+                background-color: #f0f0f0;
                 position: relative;
                 max-width: 100%;
                 margin: auto;
@@ -103,7 +103,7 @@ $productos_vendidos = obtenerProductosPorCategoria(17, $conn);
             .bannerPublicitario img {
                 width: 500px;
                 height: auto;
-                margin-bottom: 10px;
+                margin: 30px;
                 position: relative;
             }
 
@@ -210,7 +210,7 @@ $productos_vendidos = obtenerProductosPorCategoria(17, $conn);
             <h2>Los más populares</h2>
             <div class="listaProductos">
                 <?php foreach ($productos_populares as $producto): 
-                    $nombre = $producto['nombre'];
+                    $nombre = htmlspecialchars($producto['nombre']);
                     $nombreCorto = strlen($nombre) > 25 ? substr($nombre, 0, 25) . '...' : $nombre;?>
                     <div class="itemProducto" onclick="redirigirProducto(event)">
                         <form method="POST" action="index.php" class="productoForm">
@@ -232,14 +232,16 @@ $productos_vendidos = obtenerProductosPorCategoria(17, $conn);
         <section class="productos">
             <h2>Nuevos productos</h2>
             <div class="listaProductos">
-                <?php foreach ($nuevos_productos as $producto): ?>
+                <?php foreach ($nuevos_productos as $producto):
+                    $nombre = htmlspecialchars($producto['nombre']);
+                    $nombreCorto = strlen($nombre) > 25 ? substr($nombre, 0, 25) . '...' : $nombre;?>
                     <div class="itemProducto" onclick="redirigirProducto(event)">
                         <form method="POST" action="index.php" class="productoForm">
                             <input type="hidden" name="verProducto" value="<?= $producto['id'] ?>">
                             <div class="verProducto">
                                 <img src="assets/uploads/<?= $producto['imagen_url'] ?>" alt="<?= $producto['nombre'] ?>">
                                 <div class="contenedorNombreProducto">
-                                    <p><?= $producto['nombre'] ?></p>
+                                    <p><?=$nombreCorto?></p>
                                 </div>
                                 <p>$<?= $producto['precio'] ?></p>
                             </div>
@@ -253,14 +255,16 @@ $productos_vendidos = obtenerProductosPorCategoria(17, $conn);
         <section class="productos">
             <h2>Lo más vendido</h2>
             <div class="listaProductos">
-                <?php foreach ($productos_vendidos as $producto): ?>
+                <?php foreach ($productos_vendidos as $producto):
+                    $nombre = htmlspecialchars($producto['nombre']);
+                    $nombreCorto = strlen($nombre) > 25 ? substr($nombre, 0, 25) . '...' : $nombre;?>
                     <div class="itemProducto" onclick="redirigirProducto(event)">
                         <form method="POST" action="index.php" class="productoForm">
                             <input type="hidden" name="verProducto" value="<?= $producto['id'] ?>">
                             <div class="verProducto">
                                 <img src="assets/uploads/<?= $producto['imagen_url'] ?>" alt="<?= $producto['nombre'] ?>">
                                 <div class="contenedorNombreProducto">
-                                    <p><?= $producto['nombre'] ?></p>
+                                    <p><?=$nombreCorto?></p>
                                 </div>
                                 <p>$<?= $producto['precio'] ?></p>
                             </div>
@@ -272,12 +276,12 @@ $productos_vendidos = obtenerProductosPorCategoria(17, $conn);
         </section>
         
         <div class="bannerPublicitario">
-            <img src="assets/img/promocionMueble.png" alt="Nuevo Producto">
+            <img src="assets/img/dispositivos.png" alt="Nuevo Producto">
             <div>
                 <form method="POST" action="index.php" class="productoCatgForm">
                     <input type="hidden" name="verProductoCatg" value="<?= $producto['id'] ?>">
                     <h2>Obten un descuento en tu primera orden de $20</h2>
-                    <button onclick="redirigirProductoCateg(event)">Comprar por categoría</button>
+                    <button onclick="redirigirProducto(event)">Comprar por categoría</button>
                 <form>
             </div>
         </div>
@@ -286,12 +290,14 @@ $productos_vendidos = obtenerProductosPorCategoria(17, $conn);
             function redirigirProducto(event) {
                 if (!event.target.closest('button')) {
                     event.currentTarget.querySelector('.productoForm').submit();
-                }
-            }
-
-            function redirigirProductoCateg(event) {
-                if (event.target.closest('button')) {
-                    event.currentTarget.querySelector('.productoCatgForm').submit();
+                }else{
+                    // Verificar si el clic fue en el botón de categoría
+                    if (event.target.closest('.productoCatgForm button')) {
+                        event.target.closest('.productoCatgForm').submit();
+                    } else {
+                        // Manejar el clic en el botón "Añadir al carrito"
+                        event.target.closest('.addCartForm').submit();
+                    }
                 }
             }
 
@@ -319,9 +325,6 @@ $productos_vendidos = obtenerProductosPorCategoria(17, $conn);
                 mostrarSlide(diapoActual);
             });
 
-            function redirigir(url) {
-                window.location.href = url;
-            }
         </script>
     </main>
     </body>
