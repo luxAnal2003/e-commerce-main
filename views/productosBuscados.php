@@ -56,6 +56,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search'])) {
             background-color: #98c1d9;
         }
 
+        .listaProductos{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
         .itemProducto {
             border: 1px solid #ccc;
             padding: 20px;
@@ -132,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search'])) {
                     $nombre = htmlspecialchars($producto['nombre']);
                     $nombreCorto = strlen($nombre) > 25 ? substr($nombre, 0, 25) . '...' : $nombre;?>
                     <div class="itemProducto" onclick="redirigirProducto(event)">
-                        <form method="POST" action="../index.php" class="productoForm">
+                        <form method="POST" action="index.php" class="productoForm">
                             <input type="hidden" name="verProducto" value="<?= $producto['id'] ?>">
                             <div class="verProducto">
                                 <img src="../assets/uploads/<?= $producto['imagen_url'] ?>" alt="<?= $producto['nombre'] ?>">
