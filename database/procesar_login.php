@@ -1,44 +1,44 @@
 <?php
-session_start();
-require_once 'connection.php';
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+require_once 'connection.php'; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $correo_electronico = trim($_POST['correo_electronico']);
-    $contrasena = trim($_POST['contrasena']);
+    $email = $_POST['correo_electronico'];
+    $password = $_POST['contrasena'];
 
-    // Validación
-    if (empty($correo_electronico) || empty($contrasena)) {
-        die("Todos los campos son obligatorios.");
-    }
-
-    $sql = "SELECT id, nombre, contrasena FROM ClienteRegistrado WHERE correo_electronico = ?";
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        die("Error en la preparación de la consulta: " . $conn->error);
-    }
-    $stmt->bind_param("s", $correo_electronico);
+    // Buscar en ambas tablas
+    $stmt = $conn->prepare("
+        SELECT 'encargado' AS role, id, contrasena
+        FROM EncargadoInventarios
+        WHERE correo_personal = ?
+        UNION
+        SELECT 'cliente' AS role, id, contrasena
+        FROM ClienteRegistrado
+        WHERE correo_electronico = ?
+    ");
+    $stmt->bind_param("ss", $email, $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows === 1) {
-        $usuario = $result->fetch_assoc();
-        // Comparar la contraseña directamente
-        if ($contrasena === $usuario['contrasena']) {
-            // Iniciar sesión y guardar variables de sesión
-            $_SESSION['id'] = $usuario['id'];
-            $_SESSION['nombre'] = $usuario['nombre'];
-            $_SESSION['correo_electronico'] = $correo_electronico;
-            header("Location: ../index.php");
+    if ($result->num_rows == 1) {
+        $user = $result->fetch_assoc();
+        if ($password == $user['contrasena']) { // Comparación directa
+            $_SESSION['id'] = $user['id'];
+            $_SESSION['role'] = $user['role'] == 'encargado' ? 'encargado' : 'cliente';
+            
+            // Redirigir al dashboard que le pertence
+            if ($user['role'] == 'encargado') {
+                header("Location: ../dashboards/EncargadoInventarios.php");
+            } else {
+                header("Location: ../index.php");
+            }
             exit();
-        } else {
-            die("Contraseña incorrecta. Verifica que estás ingresando la contraseña correcta.");
         }
-    } else {
-        die("Usuario no encontrado. Asegúrate de que el correo electrónico sea correcto.");
     }
 
-    $stmt->close();
-} else {
-    die("Acceso no autorizado.");
+    // Credenciales inválidas
+    $error = "Email o contraseña incorrectos";
 }
 ?>
