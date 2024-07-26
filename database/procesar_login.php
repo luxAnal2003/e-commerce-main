@@ -38,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
-    // Credenciales inválidas
-    $error = "Email o contraseña incorrectos";
+    
+    echo "Email o contraseña incorrectos";
 }
 ?>
