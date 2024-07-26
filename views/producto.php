@@ -3,9 +3,6 @@
         session_start();
     }
     require_once 'database/connection.php';
-
-    // Verificar si el usuario está logueado
-    $isLoggedIn = isset($_SESSION['id']);
 ?>
 <!DOCTYPE html>
 <html lang="es">
