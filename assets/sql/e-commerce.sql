@@ -109,8 +109,11 @@ CREATE TABLE IF NOT EXISTS CarritoCompra (
     FOREIGN KEY (id_producto) REFERENCES Productos(id),
     INDEX idx_carrito_id_cliente (id_cliente),
     INDEX idx_carrito_id_cliente_no_registrado (id_cliente_no_registrado),
-    INDEX idx_carrito_id_producto (id_producto)
+    INDEX idx_carrito_id_producto (id_producto),
+    UNIQUE KEY unique_cart (id_cliente, id_producto),
+    UNIQUE KEY unique_cart_guest (id_cliente_no_registrado, id_producto)
 );
+
 
 DELIMITER //
 
@@ -176,6 +179,14 @@ CREATE TABLE IF NOT EXISTS MensajesForo (
     INDEX idx_mensajesforo_id_encargado (id_encargado),
     INDEX idx_mensajesforo_id_respuesta_a (id_respuesta_a)
 );
+
+CREATE TABLE IF NOT EXISTS EstadoMensajes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_mensaje INT,
+    estado BOOLEAN DEFAULT FALSE,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Procedimiento almacenado para calcular la fecha de entrega
 DELIMITER //
 CREATE PROCEDURE IF NOT EXISTS calcularFechaEntrega(IN new_id_compra INT)
@@ -279,23 +290,21 @@ DELIMITER ;
 
 -- Trigger para responder mensajes del foro
 DELIMITER //
-CREATE TRIGGER before_insert_MensajesForo
-BEFORE INSERT ON MensajesForo
+
+CREATE TRIGGER after_insert_MensajesForo
+AFTER INSERT ON MensajesForo
 FOR EACH ROW
 BEGIN
     -- Si el mensaje es una respuesta de un encargado de inventarios
     IF NEW.id_encargado IS NOT NULL AND NEW.id_respuesta_a IS NOT NULL THEN
-        -- Llamar al procedimiento para actualizar el estado del mensaje original
-        CALL actualizarEstadoMensaje(NEW.id_respuesta_a, NEW.id_encargado);
+        -- Insertar en la tabla de estado
+        INSERT INTO EstadoMensajes (id_mensaje, estado) 
+        VALUES (NEW.id_respuesta_a, TRUE);
     END IF;
+END //
 
-    -- Asegurarse de que los mensajes de los encargados no necesiten respuesta
-    IF NEW.id_encargado IS NOT NULL THEN
-        SET NEW.estado = TRUE;
-    END IF;
-END;
-//
 DELIMITER ;
+
 
 -- Insertar datos de ClienteRegistrado
 INSERT INTO ClienteRegistrado (nombre, apellido, edad, sexo, fecha_nacimiento, documento_identidad, contrasena, correo_electronico, ubicacion)

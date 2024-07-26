@@ -1,5 +1,7 @@
 <?php
-    session_start();
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
     require_once 'database/connection.php';
 
     // Verificar si el usuario está logueado
@@ -144,18 +146,22 @@
                             <img src="assets/uploads/<?= $producto['imagen_url'] ?>" alt="<?= $producto['nombre'] ?>">
                         </div>
                         <div class="detallesProducto">
-                            <h2><?php echo $producto['nombre']; ?></h2>
+                            <h2><?= $producto['nombre']; ?></h2>
                             <ul>
                                 <?php foreach ($descripcionItems as $item): ?>
-                                    <li><?php echo $item; ?></li>
+                                    <li><?= $item; ?></li>
                                 <?php endforeach; ?>
                             </ul>
                         </div>
                         <div class="infoCompra">
-                            <p class="disponibilidad">Disponible</p>
-                            <p>Precio: $<?php echo $producto['precio']; ?></p>
-                            <p>Cant: <?php echo $producto['stock']; ?></p>
-                            <button onclick="redirigir('carrito.php')">Agregar al carrito</button>
+                            <form method="POST" action="database/agregar_ carrito.php" class="verProducto">
+                                <input type="hidden" name="carrito" value="<?= $producto['id'] ?>">
+                                <input type="hidden" name="cantidad" value="1">
+                                <p class="disponibilidad">Disponible</p>
+                                <p>Precio: $<?= $producto['precio']; ?></p>
+                                <p>Cant: <?= $producto['stock']; ?></p>
+                                <button type="submit">Agregar al carrito</button>
+                            </form>
                         </div>
                     </div>
                     <?php
@@ -191,25 +197,34 @@
                 } else {
                     function mostrarMensajes($id_producto, $id_respuesta_a = null, $nivel = 1) {
                         global $conn;
-                        $sqlForo = "SELECT mf.*, cr.nombre, cr2.nombre AS nombre_replicado
+                        
+                        // Consulta para obtener los mensajes y sus detalles
+                        $sqlForo = "SELECT mf.id, mf.mensaje, mf.fecha, mf.id_usuario, mf.id_encargado, 
+                                           cr.nombre AS nombre_usuario, cr2.nombre AS nombre_replicado, 
+                                           e.nombre AS nombre_encargado
                                     FROM MensajesForo mf
                                     LEFT JOIN ClienteRegistrado cr ON mf.id_usuario = cr.id
                                     LEFT JOIN MensajesForo mf2 ON mf.id_respuesta_a = mf2.id
                                     LEFT JOIN ClienteRegistrado cr2 ON mf2.id_usuario = cr2.id
-                                    WHERE mf.id_producto = $id_producto AND mf.id_respuesta_a " . (is_null($id_respuesta_a) ? "IS NULL" : "= $id_respuesta_a") . "
+                                    LEFT JOIN EncargadoInventarios e ON mf.id_encargado = e.id
+                                    WHERE mf.id_producto = $id_producto 
+                                    AND mf.id_respuesta_a " . (is_null($id_respuesta_a) ? "IS NULL" : "= $id_respuesta_a") . "
                                     ORDER BY mf.fecha DESC";
+                        
                         $resultForo = mysqli_query($conn, $sqlForo);
+                        
                         if ($resultForo->num_rows > 0) {
                             while ($row = mysqli_fetch_assoc($resultForo)) {
+                                $nombreAutor = $row['nombre_usuario'] ? $row['nombre_usuario'] : $row['nombre_encargado'];
                                 ?>
                                 <div class="replica" style="margin-left: <?= $nivel * 20 ?>px;">
-                                    <?php if (!is_null($row['nombre_replicado'])){ ?>
+                                    <?php if (!is_null($row['nombre_replicado'])) { ?>
                                         <p><b>Re: <?= htmlspecialchars($row['nombre_replicado']) ?></b></p>
                                     <?php } ?>
-                                    <p>Por: <?= htmlspecialchars($row['nombre']); ?> el <?= htmlspecialchars($row['fecha']); ?></p>
+                                    <p>Por: <?= htmlspecialchars($nombreAutor); ?> el <?= htmlspecialchars(date('d/m/Y H:i', strtotime($row['fecha']))); ?></p>
                                     <hr>
                                     <p>Mensaje: <?= htmlspecialchars($row['mensaje']) ?></p>
-                                    <?php if (isset($_SESSION['id'])){ ?>
+                                    <?php if (isset($_SESSION['id'])) { ?>
                                         <a href="#" onclick="formReplicar(<?= $row['id'] ?>); return false;">Replicar</a>
                                         <div id="replicar<?= $row['id'] ?>" style="display: none;">
                                             <form action="database/insertar_comentario.php" method="POST">
@@ -221,15 +236,18 @@
                                                 </div>
                                             </form>
                                         </div>
-                                    <?php }?>
+                                    <?php } ?>
                                 </div>
                                 <?php
-                                mostrarMensajes($id_producto, $row['id'], $nivel + 1); // Mostrar réplicas
+                                // Mostrar respuestas recursivamente
+                                mostrarMensajes($id_producto, $row['id'], $nivel + 1);
                             }
                         }
                     }
+                    
+                    // Llamada a la función con el ID del producto
                     mostrarMensajes($id);
-                }
+                }                    
                 ?>
             </section>
 

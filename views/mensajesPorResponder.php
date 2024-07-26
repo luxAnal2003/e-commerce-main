@@ -114,7 +114,7 @@ if (!$isLoggedIn || $userRole !== 'encargado') {
                             </div>
                             <?php if ($isLoggedIn) { ?>
                                 <div class="respuestaForm">
-                                    <form action="../database/insertar_comentario.php" method="POST">
+                                    <form action="../database/insertar_comentario_gestorIn.php" method="POST">
                                         <input type="hidden" name="verProducto" value="<?php echo htmlspecialchars($row_hilo['id_producto']); ?>">
                                         <input type="hidden" name="id_respuesta_a" value="<?php echo htmlspecialchars($row_hilo['id_hilo']); ?>">
                                         <div class="contenedorReplica">
