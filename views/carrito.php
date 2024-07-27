@@ -1,158 +1,147 @@
+<?php
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+require_once 'database/connection.php';
+
+// Verificar si el usuario está logueado
+$isLoggedIn = isset($_SESSION['id']);
+
+if ($isLoggedIn) {
+    $id_cliente = intval($_SESSION['id']);
+
+    // Consulta para obtener los productos en el carrito del cliente específico
+    $query = "SELECT cc.*, p.nombre, p.imagen_url, p.precio 
+              FROM CarritoCompra cc 
+              JOIN Productos p ON cc.id_producto = p.id 
+              WHERE cc.id_cliente = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $id_cliente);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $carritoItems = [];
+    while ($row = $result->fetch_assoc()) {
+        $carritoItems[] = $row;
+    }
+
+    $stmt->close();
+    $conn->close();
+} else {
+    // Redirigir al usuario a la página de inicio de sesión o mostrar un mensaje
+    echo "Por favor, inicie sesión para ver su carrito.";
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Carrito de Compras</title>
-        <style>
-            .carrito {
-                max-width: 70%;
-                margin: 20px auto;
-                padding: 20px;
-                background-color: #fff;
-                border-radius: 8px;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras</title>
+    <style>
+        .carrito {
+            max-width: 70%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
 
-            .carrito h1 {
-                text-align: center;
-                margin-bottom: 20px;
-            }
+        .carrito h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-            .itemCarrito {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: space-between;
-                align-items: center;
-                padding: 10px 0;
-                border-bottom: 1px solid #ddd;
-                background-color: #f8f8f8;
-            }
+        table {
+            width: 100%;
+            border-spacing: 0;
+            border-collapse: collapse; 
+        }
 
-            .productoInfo {
-                display: flex;
-                align-items: center;
-                flex-grow: 2;
-                margin-right: 20px;
-            }
+        td, th {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
 
-            .productoInfo img {
-                width: 100px;
-                height: auto;
-                margin-right: 20px;
-            }
+        th {
+            background-color: #3d5a80;
+            color: white;
+        }
 
-            .productoInfo p {
-                margin: 0;
-            }
+        td img {
+            width: 50px;
+            height: auto;
+        }
 
-            .cantidadProducto {
-                display: flex;
-                align-items: center;
-                margin-top: 5px;
-            }
+        td a {
+            text-decoration: none;
+            margin: 10px;
+        }
 
-            .cantidadProducto a {
-                text-decoration: none;
-                color: #4CAF50;
-                font-size: 20px;
-                padding: 0 10px;
-            }
+        .subtotalCarrito {
+            text-align: right;
+            padding: 10px 0;
+        }
 
-            .cantidadProducto a:hover {
-                text-decoration: underline;
-            }
+        .subtotalCarrito p {
+            margin: 10px 0;
+        }
 
-            .cantidadProducto .cantidad {
-                margin: 0 10px;
-                font-size: 18px;
-            }
-
-            .subtotalCarrito {
-                text-align: right;
-                padding: 10px 0;
-            }
-
-            .subtotalCarrito p {
-                margin: 10px 0;
-            }
-
-            button {
-                background-color: #ee6c4d;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                cursor: pointer;
-                border-radius: 5px;
-            }
-
-
-
-            button:hover {
-                background-color: #c9302c;
-            }
-
-            hr {
-                border: 0;
-                height: 1px;
-                background: #ddd;
-            }
-
-        </style>
-        
-        <link rel="stylesheet" href="css/navbar-footer.css">
-
-    </head>
-    <body>
-        <section class="carrito">
-            <h1>Carrito</h1>
-            <div class="itemCarrito">
-                <div class="productoInfo">
-                    <img src="assets/img/promocionMueble.png" alt="imgProducto">
-                    <p>HyperX Cloud II Core Wireless - Auriculares de diadema para videojuegos, con tecnología de voz azul, color negro</p>
-                    <p>Precio: US$99.99</p>
-                    <div clas="cantidadProducto">
-                        <p class="cantidad">Cant: 1 </p>
-                        <a href="#" class="agregar"> Agregar</a>
-                        <a href="#" class="eliminar"> Eliminar</a>    
-                    </div>
-                </div>
-            </div>
-            <div class="itemCarrito">
-                <div class="productoInfo">
-                    <img src="assets/img/promocionMueble.png" alt="imgProducto">
-                    <p>HyperX Cloud II Core Wireless - Auriculares de diadema para videojuegos, con tecnología de voz azul, color negro</p>
-                    <p>Precio: US$99.99</p>
-                    <div clas="cantidadProducto">
-                        <p class="cantidad">Cant: 1 </p>
-                        <a href="#" class="agregar"> Agregar</a>
-                        <a href="#" class="eliminar"> Eliminar</a>    
-                    </div>
-                </div>
-            </div>
-            <div class="itemCarrito">
-                <div class="productoInfo">
-                    <img src="assets/img/promocionMueble.png" alt="imgProducto">
-                    <p>HyperX Cloud II Core Wireless - Auriculares de diadema para videojuegos, con tecnología de voz azul, color negro</p>
-                    <p>Precio: US$99.99</p>
-                    <div clas="cantidadProducto">
-                        <p class="cantidad">Cant: 3 </p>
-                        <a href="#" class="agregar"> Agregar</a>
-                        <a href="#" class="eliminar"> Eliminar</a>    
-                    </div>
-                </div>
-            </div>
-
+        hr {
+            border: 0;
+            height: 1px;
+            background: #ddd;
+        }
+    </style>
+    <link rel="stylesheet" href="css/navbar-footer.css">
+</head>
+<body>
+    <section class="carrito">
+        <h1>Carrito</h1>
+        <?php if (!empty($carritoItems)) { ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($carritoItems as $item) { ?>
+                        <tr>
+                            <td><img src="assets/uploads/<?= htmlspecialchars($item['imagen_url']) ?>" alt="imgProducto"></td>
+                            <td style="text-align: left;"><?= htmlspecialchars($item['nombre']) ?></td>
+                            <td>US$<?= htmlspecialchars($item['precio']) ?></td>
+                            <td><?= htmlspecialchars($item['cantidad']) ?></td>
+                            <td>US$<?= htmlspecialchars($item['total']) ?></td>
+                            <td>
+                                <a href="database/actualizar_carrito.php?id=<?= htmlspecialchars($item['id']) ?>&accion=disminuir" class="disminuir">Disminuir</a>
+                                <a href="database/actualizar_carrito.php?id=<?= htmlspecialchars($item['id']) ?>&accion=agregar" class="agregar">Agregar</a>
+                                <a href="database/actualizar_carrito.php?id=<?= htmlspecialchars($item['id']) ?>&accion=eliminar" class="eliminar">Eliminar</a>
+                            </td>
+                    <?php } ?>
+                </tbody>
+            </table>
             <div class="subtotalCarrito">
-                <p>Subtotal (3 producto/s): <strong>US$300.00</strong></p>
+                <p>Subtotal (<?= count($carritoItems) ?> producto/s): 
+                <strong>US$<?= array_sum(array_column($carritoItems, 'total')) ?></strong></p>
                 <button onclick="redirigir('compras.php')">Proceder al pago</button>
             </div>
-        </section>
-        <script>
-            function redirigir(url) {
-                window.location.href = url;
-            }
-        </script>
-
-    </body>
+        <?php } else { ?>
+            <p>El carrito está vacío.</p>
+        <?php } ?>
+    </section>
+    <script>
+        function redirigir(url) {
+            window.location.href = url;
+        }
+    </script>
+</body>
 </html>
