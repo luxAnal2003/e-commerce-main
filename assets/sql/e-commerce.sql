@@ -109,11 +109,8 @@ CREATE TABLE IF NOT EXISTS CarritoCompra (
     FOREIGN KEY (id_producto) REFERENCES Productos(id),
     INDEX idx_carrito_id_cliente (id_cliente),
     INDEX idx_carrito_id_cliente_no_registrado (id_cliente_no_registrado),
-    INDEX idx_carrito_id_producto (id_producto),
-    UNIQUE KEY unique_cart (id_cliente, id_producto),
-    UNIQUE KEY unique_cart_guest (id_cliente_no_registrado, id_producto)
+    INDEX idx_carrito_id_producto (id_producto)
 );
-
 
 DELIMITER //
 
