@@ -4,6 +4,9 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 require_once 'database/connection.php';
 
+if (!isset($_SESSION['id_sesion_no_registrado'])) {
+    $_SESSION['id_sesion_no_registrado'] = uniqid();
+}
 // Verificar si el usuario está logueado
 $isLoggedIn = isset($_SESSION['id']);
 $id_cliente = $isLoggedIn ? intval($_SESSION['id']) : null;
@@ -17,17 +20,34 @@ if ($isLoggedIn) {
               WHERE cc.id_cliente = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $id_cliente);
+
+    // Verificar registros en cuenta bancaria
+    $query_datos_bancarios = "SELECT * FROM DatosBancarios WHERE id_cliente = ?";
+    $stmt_datos_bancarios = $conn->prepare($query_datos_bancarios);
+    $stmt_datos_bancarios->bind_param("i", $id_cliente);
 } else {
+    $idSesion = $_SESSION['id_sesion'];
+
+    // Consulta para obtener los productos en el carrito del cliente no registrado
     $query = "SELECT cc.*, p.nombre, p.imagen_url, p.precio 
               FROM CarritoCompra cc 
               JOIN Productos p ON cc.id_producto = p.id 
-              WHERE cc.id_cliente_no_registrado = ?";
+              WHERE cc.id_sesion =?";
+
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $id_cliente_no_registrado);
+    $stmt->bind_param("i", $idSesion);
+
+    // Verificar registros en cuenta bancaria
+    $query_datos_bancarios = "SELECT * FROM DatosBancarios WHERE id_cliente_no_registrado = ?";
+    $stmt_datos_bancarios = $conn->prepare($query_datos_bancarios);
+    $stmt_datos_bancarios->bind_param("i", $id_cliente_no_registrado);
 }
 
 $stmt->execute();
 $result = $stmt->get_result();
+
+$stmt_datos_bancarios->execute();
+$result_datos_bancarios = $stmt_datos_bancarios->get_result();
 
 $carritoItems = [];
 while ($row = $result->fetch_assoc()) {
@@ -36,6 +56,7 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $stmt->close();
+$stmt_datos_bancarios->close();
 $conn->close();
 ?>
 
@@ -136,9 +157,22 @@ $conn->close();
                 </tbody>
             </table>
             <div class="subtotalCarrito">
-                <p>Subtotal (<?= count($carritoItems) ?> producto/s): 
-                <strong>US$<?= array_sum(array_column($carritoItems, 'total')) ?></strong></p>
-                <button onclick="window.location.href='database/procesar_compra.php'">Proceder al pago</button>
+                <form method="POST" action="database/procesar_compra.php" class="compra">
+                    <?php foreach ($carritoItems as $item) { ?>
+                        <input type="hidden" name="productos[<?= htmlspecialchars($item['id_producto']) ?>][id]" value="<?= htmlspecialchars($item['id_producto']) ?>">
+                        <input type="hidden" name="productos[<?= htmlspecialchars($item['id_producto']) ?>][nombre]" value="<?= htmlspecialchars($item['nombre']) ?>">
+                        <input type="hidden" name="productos[<?= htmlspecialchars($item['id_producto']) ?>][precio]" value="<?= htmlspecialchars($item['precio']) ?>">
+                        <input type="hidden" name="productos[<?= htmlspecialchars($item['id_producto']) ?>][cantidad]" value="<?= htmlspecialchars($item['cantidad']) ?>">
+                    <?php } ?>
+                    <p>Subtotal (<?= count($carritoItems) ?> producto/s): 
+                    <strong>US$<?= array_sum(array_column($carritoItems, 'total')) ?></strong></p>
+                    <?php if ($result_datos_bancarios->num_rows > 0) { ?>
+                    <button type="submit">Proceder al pago</button>
+                    <?php } else { ?>
+                        <button type="button" disabled style="background-color: #ccc;">Proceder al pago</button>
+                        <p>Debes agregar un método de pago antes de proceder, <a href="forms/PagoClienteNoRegistrado.html">Añadir datos bancarios</a>.</p>
+                    <?php } ?>
+                </form>
             </div>
         <?php } else { ?>
             <p>El carrito está vacío.</p>
