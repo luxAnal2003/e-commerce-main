@@ -10,12 +10,22 @@ $id_cliente = $isLoggedIn ? intval($_SESSION['id']) : null;
 $id_cliente_no_registrado = 1; // ID para usuarios no registrados
 
 // Consulta para obtener los productos en el carrito del cliente específico o no registrado
-$query = "SELECT cc.*, p.nombre, p.imagen_url, p.precio 
-          FROM CarritoCompra cc 
-          JOIN Productos p ON cc.id_producto = p.id 
-          WHERE cc.id_cliente = ? OR (cc.id_cliente_no_registrado = ? AND cc.id_cliente IS NULL)";
-$stmt = $conn->prepare($query);
-$stmt->bind_param("ii", $id_cliente, $id_cliente_no_registrado);
+if ($isLoggedIn) {
+    $query = "SELECT cc.*, p.nombre, p.imagen_url, p.precio 
+              FROM CarritoCompra cc 
+              JOIN Productos p ON cc.id_producto = p.id 
+              WHERE cc.id_cliente = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $id_cliente);
+} else {
+    $query = "SELECT cc.*, p.nombre, p.imagen_url, p.precio 
+              FROM CarritoCompra cc 
+              JOIN Productos p ON cc.id_producto = p.id 
+              WHERE cc.id_cliente_no_registrado = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $id_cliente_no_registrado);
+}
+
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -118,10 +128,10 @@ $conn->close();
                             <td><?= htmlspecialchars($item['cantidad']) ?></td>
                             <td>US$<?= htmlspecialchars($item['total']) ?></td>
                             <td>
-                                <a href="database/actualizar_carrito.php?id=<?= htmlspecialchars($item['id']) ?>&accion=disminuir" class="disminuir">Disminuir</a>
-                                <a href="database/actualizar_carrito.php?id=<?= htmlspecialchars($item['id']) ?>&accion=agregar" class="agregar">Agregar</a>
-                                <a href="database/actualizar_carrito.php?id=<?= htmlspecialchars($item['id']) ?>&accion=eliminar" class="eliminar">Eliminar</a>
+                                <a href="database/actualizar_carrito.php?id=<?= htmlspecialchars($item['id_producto']) ?>&accion=agregar" class="agregar">Agregar</a>
+                                <a href="database/actualizar_carrito.php?id=<?= htmlspecialchars($item['id_producto']) ?>&accion=eliminar" class="eliminar">Eliminar</a>
                             </td>
+                        </tr>
                     <?php } ?>
                 </tbody>
             </table>

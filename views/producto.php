@@ -151,9 +151,8 @@
                             </ul>
                         </div>
                         <div class="infoCompra">
-                            <form method="POST" action="database/agregar_ carrito.php" class="verProducto">
+                            <form method="POST" action="database/agregar_carrito.php" class="verProducto">
                                 <input type="hidden" name="carrito" value="<?= $producto['id'] ?>">
-                                <input type="hidden" name="cantidad" value="1">
                                 <p class="disponibilidad">Disponible</p>
                                 <p>Precio: $<?= $producto['precio']; ?></p>
                                 <p>Cant: <?= $producto['stock']; ?></p>

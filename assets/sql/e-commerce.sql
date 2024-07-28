@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS CarritoCompra (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT DEFAULT NULL,
     id_cliente_no_registrado INT DEFAULT 1,
-    id_producto INT,
+    id_producto INT,<
     cantidad INT NOT NULL,
     total DECIMAL(10, 2),
     FOREIGN KEY (id_cliente) REFERENCES ClienteRegistrado(id) ON DELETE CASCADE,
