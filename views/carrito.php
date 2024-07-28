@@ -6,33 +6,29 @@ require_once 'database/connection.php';
 
 // Verificar si el usuario está logueado
 $isLoggedIn = isset($_SESSION['id']);
+$id_cliente = $isLoggedIn ? intval($_SESSION['id']) : null;
+$id_cliente_no_registrado = 1; // ID para usuarios no registrados
 
-if ($isLoggedIn) {
-    $id_cliente = intval($_SESSION['id']);
+// Consulta para obtener los productos en el carrito del cliente específico o no registrado
+$query = "SELECT cc.*, p.nombre, p.imagen_url, p.precio 
+          FROM CarritoCompra cc 
+          JOIN Productos p ON cc.id_producto = p.id 
+          WHERE cc.id_cliente = ? OR (cc.id_cliente_no_registrado = ? AND cc.id_cliente IS NULL)";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("ii", $id_cliente, $id_cliente_no_registrado);
+$stmt->execute();
+$result = $stmt->get_result();
 
-    // Consulta para obtener los productos en el carrito del cliente específico
-    $query = "SELECT cc.*, p.nombre, p.imagen_url, p.precio 
-              FROM CarritoCompra cc 
-              JOIN Productos p ON cc.id_producto = p.id 
-              WHERE cc.id_cliente = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $id_cliente);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    $carritoItems = [];
-    while ($row = $result->fetch_assoc()) {
-        $carritoItems[] = $row;
-    }
-
-    $stmt->close();
-    $conn->close();
-} else {
-    // Redirigir al usuario a la página de inicio de sesión o mostrar un mensaje
-    echo "Por favor, inicie sesión para ver su carrito.";
-    exit;
+$carritoItems = [];
+while ($row = $result->fetch_assoc()) {
+    $row['total'] = $row['cantidad'] * $row['precio']; // Calcular el total del producto
+    $carritoItems[] = $row;
 }
+
+$stmt->close();
+$conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -132,16 +128,11 @@ if ($isLoggedIn) {
             <div class="subtotalCarrito">
                 <p>Subtotal (<?= count($carritoItems) ?> producto/s): 
                 <strong>US$<?= array_sum(array_column($carritoItems, 'total')) ?></strong></p>
-                <button onclick="redirigir('compras.php')">Proceder al pago</button>
+                <button onclick="window.location.href='database/procesar_compra.php'">Proceder al pago</button>
             </div>
         <?php } else { ?>
             <p>El carrito está vacío.</p>
         <?php } ?>
     </section>
-    <script>
-        function redirigir(url) {
-            window.location.href = url;
-        }
-    </script>
 </body>
 </html>
