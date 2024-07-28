@@ -42,6 +42,6 @@ if ($id_producto && $accion) {
 $stmt->close();
 $conn->close();
 
-header("Location: ../carrito.php");
+header("Location: ../index.php");
 exit;
 ?>
