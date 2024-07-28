@@ -51,10 +51,18 @@ CREATE TABLE IF NOT EXISTS EncargadoInventarios (
 
 -- Crear tabla de ClienteNoRegistrado
 CREATE TABLE IF NOT EXISTS ClienteNoRegistrado (
-    id INT PRIMARY KEY CHECK (id = 1),
+    id INT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     cedula VARCHAR(20) UNIQUE NOT NULL,
     ubicacion VARCHAR(255) NOT NULL
+);
+-- Crear tabla de sesiones para un cliente no registrado
+CREATE TABLE IF NOT EXISTS Sesiones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente_no_registrado INT,
+    fecha_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_fin TIMESTAMP NULL,
+    estado ENUM('activo', 'inactivo') DEFAULT 'activo'
 );
 
 -- Crear tabla de Datos Bancarios
@@ -100,19 +108,32 @@ CREATE TABLE IF NOT EXISTS ProductoCategoria (
 CREATE TABLE IF NOT EXISTS CarritoCompra (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT DEFAULT NULL,
-    id_cliente_no_registrado INT DEFAULT 1,
-    id_producto INT,<
+    id_cliente_no_registrado INT DEFAULT NULL,
+    id_sesion INT,
+    id_producto INT,
     cantidad INT NOT NULL,
     total DECIMAL(10, 2),
     FOREIGN KEY (id_cliente) REFERENCES ClienteRegistrado(id) ON DELETE CASCADE,
     FOREIGN KEY (id_cliente_no_registrado) REFERENCES ClienteNoRegistrado(id) ON DELETE CASCADE,
     FOREIGN KEY (id_producto) REFERENCES Productos(id),
+    FOREIGN KEY (id_sesion) REFERENCES Sesiones(id),
     INDEX idx_carrito_id_cliente (id_cliente),
     INDEX idx_carrito_id_cliente_no_registrado (id_cliente_no_registrado),
     INDEX idx_carrito_id_producto (id_producto)
 );
 
 DELIMITER //
+
+CREATE TRIGGER after_insert_CarritoCompra
+AFTER INSERT ON CarritoCompra
+FOR EACH ROW
+BEGIN
+    IF NEW.id_cliente_no_registrado IS NOT NULL THEN
+        INSERT INTO Sesiones (id_cliente_no_registrado, fecha_inicio, estado) 
+        VALUES (NEW.id_cliente_no_registrado, NOW(), 'activo');
+    END IF;
+END;
+//
 
 -- Trigger para inserciones
 CREATE TRIGGER before_insert_CarritoCompra
@@ -202,10 +223,10 @@ BEGIN
         ELSE TIME_FORMAT(SEC_TO_TIME(RAND() * 25200), '%H:%i:%s')
     END;
 
-    SET fecha_entrega = DATE_ADD(DATE(fecha_compra), INTERVAL 1 DAY);
+    SET fecha_entrega = DATE_ADD(DATE(fecha_compra), INTERVAL 1 DAY) + INTERVAL TIME_TO_SEC(hora_entrega) SECOND;
 
     -- Insertar la fecha de entrega calculada en la tabla de Compras
-    UPDATE Compras SET fecha_entrega = DATE_ADD(fecha_entrega, INTERVAL TIME_TO_SEC(hora_entrega) SECOND) WHERE id = new_id_compra;
+    UPDATE Compras SET fecha_entrega = fecha_entrega WHERE id = new_id_compra;
 END //
 DELIMITER ;
 
@@ -301,6 +322,9 @@ BEGIN
 END //
 
 DELIMITER ;
+
+ALTER TABLE CarritoCompra
+MODIFY COLUMN id_cliente_no_registrado INT DEFAULT NULL;
 
 
 -- Insertar datos de ClienteRegistrado
